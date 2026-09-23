@@ -1,0 +1,146 @@
+name: Terraform Main Pipeline (GCP)
+
+on:
+  workflow_call:
+    inputs:
+      workingDirectory:
+        required: true
+        type: string
+      bucket:
+        required: true
+        type: string
+        description: "GCS Bucket for Terraform state"
+      prefix:
+        required: true
+        type: string
+        description: "GCS Prefix for Terraform state"
+      environment:
+        required: false
+        type: string
+      pool:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+      terraformVersion:
+        required: false
+        type: string
+        default: '1.11.0'
+      runCheckov:
+        required: false
+        type: boolean
+        default: false
+      initOptions:
+        required: false
+        type: string
+        default: '-reconfigure -input=false'
+      planOptions:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      GCP_WORKLOAD_IDENTITY_PROVIDER:
+        required: true
+      GCP_SERVICE_ACCOUNT:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Terraform Plan
+    runs-on: ${{ inputs.pool }}
+    steps:
+      - name: Checkout Caller Repo
+        uses: actions/checkout@v4
+
+      - name: GCP Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup
+        uses: ./.github/actions/terraform-setup
+        with:
+          terraform_version: ${{ inputs.terraformVersion }}
+
+      - name: Init
+        uses: ./.github/actions/terraform-init
+        with:
+          working_directory: ${{ inputs.workingDirectory }}
+          bucket: ${{ inputs.bucket }}
+          prefix: ${{ inputs.prefix }}
+          init_options: ${{ inputs.initOptions }}
+
+      - name: Plan
+        uses: ./.github/actions/terraform-plan
+        with:
+          working_directory: ${{ inputs.workingDirectory }}
+          plan_options: ${{ inputs.planOptions }}
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ inputs.workingDirectory }}/tfplan
+
+  scan:
+    name: Checkov Scan
+    needs: build
+    if: inputs.runCheckov == true
+    runs-on: ${{ inputs.pool }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: ${{ inputs.workingDirectory }}
+          framework: terraform
+          skip_check: CKV_GCP_1,CKV_GCP_2 # Example GCP skips, adjust as needed
+
+  apply:
+    name: Terraform Apply
+    needs: [build, scan]
+    if: |
+      always() && 
+      needs.build.result == 'success' && 
+      (needs.scan.result == 'success' || needs.scan.result == 'skipped') &&
+      github.ref == 'refs/heads/main'
+    runs-on: ${{ inputs.pool }}
+    environment: ${{ inputs.environment }} # Kept for manual approval gate
+    steps:
+      - name: Checkout Caller Repo
+        uses: actions/checkout@v4
+      
+      - name: GCP Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup
+        uses: ./.github/actions/terraform-setup
+        with:
+          terraform_version: ${{ inputs.terraformVersion }}
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ inputs.workingDirectory }}
+
+      - name: Init
+        uses: ./.github/actions/terraform-init
+        with:
+          working_directory: ${{ inputs.workingDirectory }}
+          bucket: ${{ inputs.bucket }}
+          prefix: ${{ inputs.prefix }}
+          init_options: ${{ inputs.initOptions }}
+
+      - name: Apply
+        uses: ./.github/actions/terraform-apply
+        with:
+          working_directory: ${{ inputs.workingDirectory }}

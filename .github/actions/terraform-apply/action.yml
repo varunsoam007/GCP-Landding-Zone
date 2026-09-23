@@ -1,0 +1,14 @@
+name: 'Terraform Apply'
+description: 'Apply Terraform plan'
+inputs:
+  working_directory:
+    description: 'Working directory'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Terraform Apply
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform apply -auto-approve tfplan

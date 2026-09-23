@@ -1,0 +1,24 @@
+name: 'Terraform Setup'
+description: 'Install Terraform and GCP CLI'
+inputs:
+  terraform_version:
+    description: 'Version of Terraform to install'
+    required: true
+    default: '1.11.0'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+
+    - name: GCP CLI check
+      shell: bash
+      run: |
+        if ! command -v gcloud &> /dev/null; then
+          echo "gcloud CLI is missing! Please use an environment with gcloud installed or add setup-gcloud action."
+          exit 1
+        fi
+        gcloud --version

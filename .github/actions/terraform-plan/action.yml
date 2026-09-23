@@ -1,0 +1,23 @@
+name: 'Terraform Plan'
+description: 'Plan Terraform deployment'
+inputs:
+  working_directory:
+    description: 'Working directory'
+    required: true
+  plan_options:
+    description: 'Additional plan options'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Terraform Validate
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform validate
+
+    - name: Terraform Plan
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: terraform plan ${{ inputs.plan_options }} -out=tfplan
