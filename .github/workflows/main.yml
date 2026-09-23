@@ -22,8 +22,8 @@ env:
 
 jobs:
   deploy:
-    # Pointing to the local reusable workflow
-    uses: ./.github/workflows/terraform-pipeline.yml
+    # Pointing to the central pipeline template repo
+    uses: varunsoam007/gcp-pipeline-template/.github/workflows/terraform-pipeline.yml@main
     with:
       workingDirectory: ${{ env.WORKING_DIRECTORY }}
       bucket: ${{ env.GCS_BUCKET }}
