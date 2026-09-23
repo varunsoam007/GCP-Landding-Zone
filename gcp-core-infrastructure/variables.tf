@@ -13,5 +13,5 @@ variable "org_id" {
 variable "region" {
   description = "The region to deploy resources in"
   type        = string
-  default     = "us-central1"
+  default     = "asia-south1"
 }

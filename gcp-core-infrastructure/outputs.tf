@@ -8,7 +8,3 @@ output "subnet_name" {
   value       = google_compute_subnetwork.subnet.name
 }
 
-output "bucket_url" {
-  description = "The URL of the created bucket"
-  value       = google_storage_bucket.tf_state_bucket.url
-}

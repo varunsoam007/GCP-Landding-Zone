@@ -32,15 +32,3 @@ resource "google_compute_firewall" "allow_internal" {
   source_ranges = ["10.0.1.0/24"]
 }
 
-# A basic Cloud Storage bucket for Terraform State
-resource "google_storage_bucket" "tf_state_bucket" {
-  name          = "${var.project_id}-tf-state-bucket"
-  location      = "US"
-  force_destroy = true
-  
-  uniform_bucket_level_access = true
-
-  versioning {
-    enabled = true
-  }
-}
