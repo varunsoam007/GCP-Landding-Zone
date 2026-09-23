@@ -12,25 +12,17 @@ on:
         type: boolean
         default: false
 
-env:
-  ENVIRONMENT: 'prod'
-  WORKING_DIRECTORY: 'gcp-core-infrastructure'
-  TF_VERSION: '1.11.0'
-  # GCP specific backend configurations
-  GCS_BUCKET: 'varunsoam007'
-  GCS_PREFIX: 'terraform/state/core'
-
 jobs:
   deploy:
     # Pointing to the central pipeline template repo
     uses: varunsoam007/gcp-pipeline-template/.github/workflows/terraform-pipeline.yml@main
     with:
-      workingDirectory: ${{ env.WORKING_DIRECTORY }}
-      bucket: ${{ env.GCS_BUCKET }}
-      prefix: ${{ env.GCS_PREFIX }}/${{ env.ENVIRONMENT }}
-      environment: ${{ env.ENVIRONMENT }}
-      terraformVersion: ${{ env.TF_VERSION }}
-      runCheckov: ${{ github.event.inputs.runCheckov || false }}
+      workingDirectory: 'gcp-core-infrastructure'
+      bucket: 'varunsoam007'
+      prefix: 'terraform/state/core/prod'
+      environment: 'prod'
+      terraformVersion: '1.11.0'
+      runCheckov: ${{ inputs.runCheckov == true }}
     secrets:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
