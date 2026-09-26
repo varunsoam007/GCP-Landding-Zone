@@ -15,3 +15,9 @@ variable "region" {
   type        = string
   default     = "asia-south1"
 }
+
+variable "host_project_id" {
+  description = "The Host Project ID for Shared VPC"
+  type        = string
+  default     = "shared-service-509706"
+}
