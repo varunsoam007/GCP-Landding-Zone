@@ -33,6 +33,8 @@ resource "google_network_security_firewall_endpoint_association" "vpc_associatio
   location          = "${var.region}-a"
   network           = google_compute_network.hub_vpc.id
   firewall_endpoint = google_network_security_firewall_endpoint.ngfw_endpoint.id
+
+  depends_on = [google_project_service.network_security_api_host]
 }
 
 # 5. Add a Firewall Policy Rule to route traffic to NGFW for Inspection
