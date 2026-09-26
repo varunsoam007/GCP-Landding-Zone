@@ -5,7 +5,7 @@ resource "google_network_security_security_profile" "threat_prevention" {
   parent      = "organizations/${var.org_id}" # NGFW Profiles are usually org or folder level
   description = "Block severe threats using Cloud NGFW Enterprise"
 
-  # Optional: Customize threat prevention settings (e.g., action for critical severity)
+  depends_on = [google_project_service.network_security_api]
 }
 
 # 2. Create a Security Profile Group
@@ -22,6 +22,8 @@ resource "google_network_security_firewall_endpoint" "ngfw_endpoint" {
   parent             = "organizations/${var.org_id}"
   location           = "${var.region}-a"
   billing_project_id = var.host_project_id
+
+  depends_on = [google_project_service.network_security_api]
 }
 
 # 4. Associate the Firewall Endpoint with the Hub VPC

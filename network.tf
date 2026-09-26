@@ -1,6 +1,7 @@
 # 1. Enable Shared VPC in the Host Project
 resource "google_compute_shared_vpc_host_project" "host" {
-  project = var.host_project_id
+  project    = var.host_project_id
+  depends_on = [google_project_service.compute_api]
 }
 
 # 3. Create the Hub VPC Network (in Host Project)
