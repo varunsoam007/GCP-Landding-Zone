@@ -29,7 +29,7 @@ resource "google_network_security_firewall_endpoint" "ngfw_endpoint" {
 # 4. Associate the Firewall Endpoint with the Hub VPC
 resource "google_network_security_firewall_endpoint_association" "vpc_association" {
   name              = "hub-vpc-ngfw-association"
-  parent            = "projects/${var.host_project_id}/locations/${var.region}-a"
+  parent            = "projects/${var.host_project_id}"
   location          = "${var.region}-a"
   network           = google_compute_network.hub_vpc.id
   firewall_endpoint = google_network_security_firewall_endpoint.ngfw_endpoint.id
