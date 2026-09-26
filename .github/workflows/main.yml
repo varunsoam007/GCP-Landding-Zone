@@ -21,7 +21,7 @@ jobs:
     # Pointing to the central pipeline template repo
     uses: varunsoam007/gcp-pipeline-template/.github/workflows/terraform-pipeline.yml@main
     with:
-      workingDirectory: 'gcp-core-infrastructure'
+      workingDirectory: '.'
       bucket: 'varunsoam007'
       prefix: 'terraform/state/core/prod'
       environment: 'prod'
