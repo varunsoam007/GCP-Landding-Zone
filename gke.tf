@@ -61,6 +61,13 @@ resource "google_container_cluster" "gke_cluster" {
 # ==============================================================================
 # Custom Node Pool Configuration
 # ==============================================================================
+
+# Import existing primary-node-pool into Terraform state
+import {
+  id = "${var.project_id}/${var.region}-a/${google_container_cluster.gke_cluster.name}/primary-node-pool"
+  to = google_container_node_pool.primary_nodes
+}
+
 resource "google_container_node_pool" "primary_nodes" {
   name       = "primary-node-pool"
   location   = "${var.region}-a"
@@ -70,10 +77,9 @@ resource "google_container_node_pool" "primary_nodes" {
   initial_node_count = 1
 
   # 1. Scaling Configuration
-  # Quota in project is 12 vCPUs. With e2-standard-4 (4 vCPU/node), max nodes is 3 (3 * 4 = 12 vCPUs).
   autoscaling {
     min_node_count = 1
-    max_node_count = 3
+    max_node_count = 5
   }
   
   # 2. Node Configuration
