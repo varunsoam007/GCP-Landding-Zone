@@ -28,3 +28,16 @@ resource "google_service_account_iam_binding" "external_secrets_workload_identit
     "serviceAccount:${var.project_id}.svc.id.goog[external-secrets/external-secrets-sa]"
   ]
 }
+
+# 4. Grant Secret Manager roles to CI/CD Terraform Service Account
+resource "google_project_iam_member" "terraform_github_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:terraform-github@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "terraform_github_secret_admin" {
+  project = var.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:terraform-github@${var.project_id}.iam.gserviceaccount.com"
+}
