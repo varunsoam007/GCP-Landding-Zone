@@ -13,7 +13,7 @@ resource "google_service_account" "cert_manager_sa" {
 
 # Grant DNS Admin role to Cert Manager SA on the HOST project (where DNS zone lives)
 resource "google_project_iam_member" "cert_manager_dns_admin" {
-  project = var.shared_vpc_host_project_id
+  project = var.host_project_id
   role    = "roles/dns.admin"
   member  = "serviceAccount:${google_service_account.cert_manager_sa.email}"
 }
@@ -39,7 +39,7 @@ resource "google_service_account" "external_dns_sa" {
 
 # Grant DNS Admin role to External DNS SA on the HOST project
 resource "google_project_iam_member" "external_dns_dns_admin" {
-  project = var.shared_vpc_host_project_id
+  project = var.host_project_id
   role    = "roles/dns.admin"
   member  = "serviceAccount:${google_service_account.external_dns_sa.email}"
 }
