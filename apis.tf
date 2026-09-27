@@ -28,3 +28,9 @@ resource "google_project_service" "container_api_service" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "dns_api" {
+  project            = var.host_project_id
+  service            = "dns.googleapis.com"
+  disable_on_destroy = false
+}
+

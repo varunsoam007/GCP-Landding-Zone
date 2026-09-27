@@ -9,6 +9,11 @@ output "subnet_name" {
 }
 
 output "jksoa_ingress_ip" {
-  description = "The static public IP address for jksoa.in to map in DNS"
+  description = "The static public IP address for jksoam.in to map in DNS"
   value       = google_compute_global_address.jksoa_ingress_ip.address
+}
+
+output "jksoam_name_servers" {
+  description = "The Name Servers to delegate jksoam.in to (update these in your domain registrar)"
+  value       = google_dns_managed_zone.jksoam_zone.name_servers
 }
