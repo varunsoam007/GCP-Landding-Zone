@@ -21,3 +21,10 @@ resource "google_project_service" "container_api" {
   service            = "container.googleapis.com"
   disable_on_destroy = false
 }
+
+resource "google_project_service" "container_api_service" {
+  project            = var.project_id
+  service            = "container.googleapis.com"
+  disable_on_destroy = false
+}
+

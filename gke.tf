@@ -5,12 +5,12 @@
 resource "google_container_cluster" "gke_cluster" {
   name     = "enterprise-gke-cluster"
   location = "${var.region}-a" # Zonal cluster for minimal cost. Use var.region for HA.
-  project  = google_compute_shared_vpc_host_project.host.project
+  project  = var.project_id
   
   # 1. Network Configuration
-  # Placing the cluster inside the Hub VPC and Private Subnet.
-  network    = google_compute_network.hub_vpc.id
-  subnetwork = google_compute_subnetwork.private_subnet.id
+  # Placing the cluster inside the Hub VPC and Private Subnet (Shared VPC).
+  network    = google_compute_network.hub_vpc.self_link
+  subnetwork = google_compute_subnetwork.private_subnet.self_link
   
   # VPC-Native is the modern standard for GKE. It assigns actual VPC IP addresses to Pods.
   # This relies on the secondary_ip_range defined in our private_subnet in network.tf.
@@ -27,7 +27,7 @@ resource "google_container_cluster" "gke_cluster" {
   # Allows Kubernetes service accounts to impersonate GCP IAM service accounts securely
   # without downloading service account JSON keys. Highly recommended for production.
   workload_identity_config {
-    workload_pool = "${var.host_project_id}.svc.id.goog"
+    workload_pool = "${var.project_id}.svc.id.goog"
   }
 
   # 3. Upgrade Strategy
@@ -44,9 +44,12 @@ resource "google_container_cluster" "gke_cluster" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  # Wait for GKE API to be enabled before creation
+  # Wait for GKE API to be enabled and Shared VPC IAM bindings to be ready
   depends_on = [
-    google_project_service.container_api
+    google_project_service.container_api_service,
+    google_compute_shared_vpc_service_project.gke_service_project,
+    google_compute_subnetwork_iam_member.gke_robot_network_user,
+    google_project_iam_member.gke_host_agent
   ]
 }
 
@@ -57,7 +60,7 @@ resource "google_container_node_pool" "primary_nodes" {
   name       = "primary-node-pool"
   location   = "${var.region}-a"
   cluster    = google_container_cluster.gke_cluster.name
-  project    = google_compute_shared_vpc_host_project.host.project
+  project    = var.project_id
 
   initial_node_count = 1
 
