@@ -57,25 +57,25 @@ resource "google_container_cluster" "gke_cluster" {
 # Custom Node Pool Configuration
 # ==============================================================================
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "primary-node-pool"
+  name       = "primary-node-pool-v2"
   location   = "${var.region}-a"
   cluster    = google_container_cluster.gke_cluster.name
   project    = var.project_id
 
-  initial_node_count = 1
+  initial_node_count = var.gke_node_min_count
 
   # 1. Scaling Configuration
   # We use cluster autoscaler to save costs and scale up only when pods need more space.
   autoscaling {
-    min_node_count = 1
-    max_node_count = 5
+    min_node_count = var.gke_node_min_count
+    max_node_count = var.gke_node_max_count
   }
   
   # 2. Node Configuration
   node_config {
-    machine_type = "e2-standard-4" # Minimum recommended for GitOps/ArgoCD workloads
-    disk_size_gb = 50
-    disk_type    = "pd-standard"
+    machine_type = var.gke_node_machine_type
+    disk_size_gb = var.gke_node_disk_size_gb
+    disk_type    = var.gke_node_disk_type
 
     # Enables Workload Identity on the nodes
     workload_metadata_config {
@@ -95,11 +95,10 @@ resource "google_container_node_pool" "primary_nodes" {
     auto_upgrade = true
   }
 
-  # 4. Terraform Lifecycle Rule (CRITICAL FOR AUTOSCALING)
-  # When autoscaling is enabled, GKE changes the node count behind the scenes.
-  # If we don't ignore this, `terraform apply` will forcefully scale the cluster 
-  # back down to initial_node_count, disrupting workloads.
+  # 4. Terraform Lifecycle Rule (CRITICAL FOR ZERO-DOWNTIME AUTOSCALING)
+  # create_before_destroy ensures the new pool is ready before the old one is removed.
   lifecycle {
+    create_before_destroy = true
     ignore_changes = [
       initial_node_count,
       node_count
