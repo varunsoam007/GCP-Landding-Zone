@@ -3,10 +3,15 @@
 # ==============================================================================
 
 # 1. Reserve a Static Public IP for the domain (jksoa.in)
-# This IP will be attached to the Load Balancer by GKE's Ingress Controller.
+# This IP will be attached to the Load Balancer by GKE Gateway Controller.
+import {
+  id = "projects/${var.project_id}/global/addresses/jksoa-ingress-ip"
+  to = google_compute_global_address.jksoa_ingress_ip
+}
+
 resource "google_compute_global_address" "jksoa_ingress_ip" {
-  name    = "jksoa-ingress-ip"
-  project = google_compute_shared_vpc_host_project.host.project
+  name        = "jksoa-ingress-ip"
+  project     = var.project_id
   description = "Static IP for jksoa.in Ingress"
 }
 
