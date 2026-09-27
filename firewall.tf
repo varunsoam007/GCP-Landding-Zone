@@ -94,3 +94,25 @@ resource "google_compute_network_firewall_policy_rule" "allow_proxy_subnet" {
     }
   }
 }
+
+# Standard VPC Firewall Rule for Google Cloud External L7 LB & Health Checks (Host Project)
+resource "google_compute_firewall" "allow_google_lb_and_health_checks" {
+  name        = "allow-google-lb-and-health-checks"
+  network     = google_compute_network.hub_vpc.name
+  project     = google_compute_shared_vpc_host_project.host.project
+  description = "Allow Google Cloud External L7 Load Balancer and Health Checks to GKE backends"
+  direction   = "INGRESS"
+  priority    = 1000
+
+  source_ranges = [
+    "35.191.0.0/16",
+    "130.211.0.0/22"
+  ]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443", "8080-8090", "15021", "30000-32767"]
+  }
+
+  target_tags = ["gke-enterprise-gke-cluster-15dbef7f-node"]
+}
