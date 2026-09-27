@@ -77,9 +77,10 @@ resource "google_container_node_pool" "primary_nodes" {
   initial_node_count = 1
 
   # 1. Scaling Configuration
+  # Quota is strictly 12 vCPUs: 3 nodes * 4 vCPUs (e2-standard-4) = 12 vCPUs max.
   autoscaling {
     min_node_count = 1
-    max_node_count = 5
+    max_node_count = 3
   }
   
   # 2. Node Configuration
