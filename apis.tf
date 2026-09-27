@@ -15,3 +15,9 @@ resource "google_project_service" "network_security_api_host" {
   service            = "networksecurity.googleapis.com"
   disable_on_destroy = false
 }
+
+resource "google_project_service" "container_api" {
+  project            = var.host_project_id
+  service            = "container.googleapis.com"
+  disable_on_destroy = false
+}

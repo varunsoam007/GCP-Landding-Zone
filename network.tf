@@ -20,6 +20,17 @@ resource "google_compute_subnetwork" "private_subnet" {
   network                  = google_compute_network.hub_vpc.id
   ip_cidr_range            = "10.10.0.0/20"
   private_ip_google_access = true
+
+  # Secondary IP ranges are REQUIRED for VPC-native GKE clusters
+  # One range for Pod IPs, one for Service IPs.
+  secondary_ip_range {
+    range_name    = "gke-pod-range"
+    ip_cidr_range = "10.11.0.0/16"
+  }
+  secondary_ip_range {
+    range_name    = "gke-svc-range"
+    ip_cidr_range = "10.12.0.0/20"
+  }
 }
 
 # 5. Cloud NAT (So private VMs can reach internet for updates)
