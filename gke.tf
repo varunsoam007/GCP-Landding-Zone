@@ -38,6 +38,11 @@ resource "google_container_cluster" "gke_cluster" {
     channel = "REGULAR"
   }
 
+  # Enable GKE Gateway API controller for Layer 7 External Application Load Balancing
+  gateway_api_config {
+    channel = "CHANNEL_STANDARD"
+  }
+
   # 4. Node Pool Management
   # Best practice: Delete the default node pool and create custom ones.
   # This allows modifying node machine types later without destroying the whole cluster.
@@ -57,25 +62,25 @@ resource "google_container_cluster" "gke_cluster" {
 # Custom Node Pool Configuration
 # ==============================================================================
 resource "google_container_node_pool" "primary_nodes" {
-  name       = "primary-node-pool-v2"
+  name       = "primary-node-pool"
   location   = "${var.region}-a"
   cluster    = google_container_cluster.gke_cluster.name
   project    = var.project_id
 
-  initial_node_count = var.gke_node_min_count
+  initial_node_count = 1
 
   # 1. Scaling Configuration
-  # We use cluster autoscaler to save costs and scale up only when pods need more space.
+  # Quota in project is 12 vCPUs. With e2-standard-4 (4 vCPU/node), max nodes is 3 (3 * 4 = 12 vCPUs).
   autoscaling {
-    min_node_count = var.gke_node_min_count
-    max_node_count = var.gke_node_max_count
+    min_node_count = 1
+    max_node_count = 3
   }
   
   # 2. Node Configuration
   node_config {
-    machine_type = var.gke_node_machine_type
-    disk_size_gb = var.gke_node_disk_size_gb
-    disk_type    = var.gke_node_disk_type
+    machine_type = "e2-standard-4"
+    disk_size_gb = 50
+    disk_type    = "pd-standard"
 
     # Enables Workload Identity on the nodes
     workload_metadata_config {
@@ -95,10 +100,8 @@ resource "google_container_node_pool" "primary_nodes" {
     auto_upgrade = true
   }
 
-  # 4. Terraform Lifecycle Rule (CRITICAL FOR ZERO-DOWNTIME AUTOSCALING)
-  # create_before_destroy ensures the new pool is ready before the old one is removed.
+  # 4. Terraform Lifecycle Rule (CRITICAL FOR AUTOSCALING)
   lifecycle {
-    create_before_destroy = true
     ignore_changes = [
       initial_node_count,
       node_count

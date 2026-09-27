@@ -34,23 +34,23 @@ variable "gke_node_machine_type" {
 variable "gke_node_disk_size_gb" {
   description = "OS Disk size in GB for GKE nodes"
   type        = number
-  default     = 100
+  default     = 50
 }
 
 variable "gke_node_disk_type" {
-  description = "Disk type for GKE nodes (pd-balanced recommended for production IOPS)"
+  description = "Disk type for GKE nodes"
   type        = string
-  default     = "pd-balanced"
+  default     = "pd-standard"
 }
 
 variable "gke_node_min_count" {
   description = "Minimum number of nodes for autoscaling"
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "gke_node_max_count" {
-  description = "Maximum number of nodes for autoscaling"
+  description = "Maximum number of nodes for autoscaling (capped at 3 due to 12 vCPU regional quota)"
   type        = number
-  default     = 8
+  default     = 3
 }

@@ -2,6 +2,22 @@
 # GCP Secret Manager Secrets for OAuth2 Proxy
 # ==============================================================================
 
+# Import existing Secret Manager secrets if already created in GCP
+import {
+  id = "projects/${var.project_id}/secrets/oauth2-client-id"
+  to = google_secret_manager_secret.oauth2_client_id
+}
+
+import {
+  id = "projects/${var.project_id}/secrets/oauth2-client-secret"
+  to = google_secret_manager_secret.oauth2_client_secret
+}
+
+import {
+  id = "projects/${var.project_id}/secrets/oauth2-cookie-secret"
+  to = google_secret_manager_secret.oauth2_cookie_secret
+}
+
 resource "google_secret_manager_secret" "oauth2_client_id" {
   secret_id = "oauth2-client-id"
   project   = var.project_id
