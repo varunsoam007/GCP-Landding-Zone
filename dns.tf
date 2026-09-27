@@ -38,3 +38,14 @@ resource "google_dns_record_set" "wildcard_a_record" {
 
   rrdatas = [google_compute_global_address.jksoa_ingress_ip.address]
 }
+
+# 4. Explicit A Record for shop.jksoam.in
+resource "google_dns_record_set" "shop_a_record" {
+  name         = "shop.${google_dns_managed_zone.jksoam_zone.dns_name}"
+  managed_zone = google_dns_managed_zone.jksoam_zone.name
+  project      = google_compute_shared_vpc_host_project.host.project
+  type         = "A"
+  ttl          = 300
+
+  rrdatas = [google_compute_global_address.jksoa_ingress_ip.address]
+}
