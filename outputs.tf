@@ -8,3 +8,7 @@ output "subnet_name" {
   value       = google_compute_subnetwork.private_subnet.name
 }
 
+output "jksoa_ingress_ip" {
+  description = "The static public IP address for jksoa.in to map in DNS"
+  value       = google_compute_global_address.jksoa_ingress_ip.address
+}
